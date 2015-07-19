@@ -8,7 +8,7 @@ import time
 
 
 
-LOG_PATH = "/var/log/impo_admin/"
+LOG_PATH = "/var/log/FreeTv/"
 
 
 
