@@ -13,7 +13,6 @@ WTForms==2.0.1
 Werkzeug==0.9.6
 argparse==1.2.1
 certifi==2015.04.28
-cffi==1.1.2
 cryptography==0.9.3
 ecdsa==0.13
 enum34==1.0.4
