@@ -14,7 +14,6 @@ argparse==1.2.1
 certifi==2015.04.28
 ecdsa==0.13
 itsdangerous==0.24
-maxcdn==0.0.7
 newrelic==2.0.0.1
 oauthlib==0.7.2
 paramiko==1.15.2
