@@ -35,7 +35,7 @@ def CreateShows():
         shows.append(show)
         nShow = Node.cast('Show', show)
         graph.create(nShow)
-        print show['name']
+        print str(show['name'])
     print 'end creating shows'
 
 def update_show_info():
