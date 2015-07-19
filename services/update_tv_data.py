@@ -73,7 +73,7 @@ def update_show_info():
                 print 'Tring again'
                 success = True
 
-        print node_show['name']
+        print str(node_show['name'])
         #info
 
         node_show['started'] = result_dict['Show'].get('started', None)
@@ -244,7 +244,7 @@ def main2():
     graph.create(alice_knows_bob)
 
 if __name__ == "__main__":
-    CreateShows()
+    #CreateShows()
     update_show_info()
     update_links()
 
