@@ -19,7 +19,6 @@ newrelic==2.0.0.1
 oauthlib==0.7.2
 paramiko==1.15.2
 ply==3.4
-pyOpenSSL==0.13.1
 pycrypto==2.6.1
 pygeoip==0.2.7
 pymongo==2.6.2
