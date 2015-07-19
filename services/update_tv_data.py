@@ -244,7 +244,7 @@ def main2():
     graph.create(alice_knows_bob)
 
 if __name__ == "__main__":
-    #CreateShows()
+    CreateShows()
     update_show_info()
-    #update_links()
+    update_links()
 
