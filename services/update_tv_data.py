@@ -337,7 +337,7 @@ def update_info_and_links():
                         success = True
 
                 try:
-                    search = record['s.name'] + ' s' + str(node_season['no']).zfill(2) + 'e' + str(node_episode['epnum']).zfill(2)
+                    search = node_season['name'] + ' s' + str(node_season['no']).zfill(2) + 'e' + str(node_episode['epnum']).zfill(2)
 
                     print search
                     #links
