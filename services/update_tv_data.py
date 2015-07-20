@@ -210,7 +210,7 @@ def update_info_and_links():
     graph = Graph(GRAPH_CONNECTION_STRNIG)
 
     results = graph.cypher.stream("match (s:Show) return id(s) as eid,s.id")
-    start_id = 764
+    start_id = 0
     for record in results:
         if int(record['s.id']) < start_id:
             continue
