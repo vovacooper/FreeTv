@@ -9,12 +9,12 @@ import xmltodict
 import sys
 import json
 
+from classes.logger import logger
+
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-
 GRAPH_CONNECTION_STRNIG = 'http://localhost:7474/db/data/'
-
 
 
 def CreateShows():
@@ -38,6 +38,7 @@ def CreateShows():
         print str(show['name'])
     print 'end creating shows'
 
+
 def update_show_info():
     print 'updating show info'
     authenticate("localhost:7474", "neo4j", "1234")
@@ -56,25 +57,26 @@ def update_show_info():
         success = True
         while success:
             try:
-                show_info_e_list = requests.get('http://services.tvrage.com/feeds/full_show_info.php?sid={0}'.format(node_show['id']))
+                show_info_e_list = requests.get(
+                    'http://services.tvrage.com/feeds/full_show_info.php?sid={0}'.format(node_show['id']))
                 result_dict = xmltodict.parse(show_info_e_list.text)
 
-                omdb_show_info = requests.get('http://www.omdbapi.com/?t={0}&y=&plot=full&r=json'.format(node_show['name']))
+                omdb_show_info = requests.get(
+                    'http://www.omdbapi.com/?t={0}&y=&plot=full&r=json'.format(node_show['name']))
                 dict_omdb_show_info = json.loads(omdb_show_info.text)
                 if dict_omdb_show_info['Response'] == 'True':
                     for key, value in dict_omdb_show_info.iteritems():
                         node_show[key] = value
                 success = False
             except ValueError as e:
-                print e
+                logger.exception("Value Error")
                 continue
             except Exception as e:
-                print e
-                print 'Tring again'
+                logger.exception("Some network issue, will try again")
                 success = True
 
         print str(node_show['name'])
-        #info
+        # info
 
         node_show['started'] = result_dict['Show'].get('started', None)
         node_show['ended'] = result_dict['Show'].get('ended', None)
@@ -162,19 +164,18 @@ def update_show_info():
                         node_episode.push()
                         success = False
                     except ValueError as e:
-                        print e
+                        logger.exception("Value error")
                         continue
                     except Exception as e:
-                        print e
-                        print 'Tring again'
+                        logger.exception("network issue: wil try again")
                         success = True
-
 
                 show_episode = Relationship(show_season, "has", node_episode)
                 graph.create(show_episode)
                 count = count + 1
 
     print 'end updating show info'
+
 
 def update_links():
     authenticate("localhost:7474", "neo4j", "1234")
@@ -186,12 +187,14 @@ def update_links():
         search = record['s.name'] + ' s' + str(record['e.epnum']).zfill(2) + 'e' + str(record['se.no']).zfill(2)
 
         print search
-        #links
-        search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253, 4545021852, 6021755051, 8975221455]
+        # links
+        search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253,
+                          4545021852, 6021755051, 8975221455]
 
         for n in search_numbers:
-            links_from_google = requests.get('https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
-                         '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
+            links_from_google = requests.get(
+                'https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
+                '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
 
             dict_from_google = json.loads(links_from_google.text)
             for result in dict_from_google['results']:
@@ -203,6 +206,7 @@ def update_links():
                 node_episode = graph.node(record['eid'])
                 link_episode = Relationship(node_episode, "has", node_link)
                 graph.create(link_episode)
+
 
 def update_info_and_links():
     print 'updating show info'
@@ -222,25 +226,26 @@ def update_info_and_links():
         success = True
         while success:
             try:
-                show_info_e_list = requests.get('http://services.tvrage.com/feeds/full_show_info.php?sid={0}'.format(node_show['id']))
+                show_info_e_list = requests.get(
+                    'http://services.tvrage.com/feeds/full_show_info.php?sid={0}'.format(node_show['id']))
                 result_dict = xmltodict.parse(show_info_e_list.text)
 
-                omdb_show_info = requests.get('http://www.omdbapi.com/?t={0}&y=&plot=full&r=json'.format(node_show['name']))
+                omdb_show_info = requests.get(
+                    'http://www.omdbapi.com/?t={0}&y=&plot=full&r=json'.format(node_show['name']))
                 dict_omdb_show_info = json.loads(omdb_show_info.text)
                 if dict_omdb_show_info['Response'] == 'True':
                     for key, value in dict_omdb_show_info.iteritems():
                         node_show[key] = value
                 success = False
             except ValueError as e:
-                print e
+                logger.exception("Value error")
                 continue
             except Exception as e:
-                print e
-                print 'Tring again'
+                logger.exception("Some network issue: will try again")
                 success = True
 
         print str(node_show['name'])
-        #info
+        # info
 
         node_show['started'] = result_dict['Show'].get('started', None)
         node_show['ended'] = result_dict['Show'].get('ended', None)
@@ -330,23 +335,25 @@ def update_info_and_links():
 
                         success = False
                     except ValueError as e:
-                        print e
+                        logger.exception("Value error")
                         continue
                     except Exception as e:
-                        print e
-                        print 'Tring again'
+                        logger.exception("Some network issue: will try again")
                         success = True
 
                 try:
-                    search = node_season['name'] + ' s' + str(node_season['no']).zfill(2) + 'e' + str(node_episode['epnum']).zfill(2)
+                    search = node_season['name'] + ' s' + str(node_season['no']).zfill(2) + 'e' + str(
+                        node_episode['epnum']).zfill(2)
 
                     print search
                     #links
-                    search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253, 4545021852, 6021755051, 8975221455]
+                    search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059,
+                                      1731156253, 4545021852, 6021755051, 8975221455]
 
                     for n in search_numbers:
-                        links_from_google = requests.get('https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
-                                     '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
+                        links_from_google = requests.get(
+                            'https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
+                            '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
 
                         dict_from_google = json.loads(links_from_google.text)
                         for result in dict_from_google['results']:
@@ -357,8 +364,8 @@ def update_info_and_links():
                             graph.create(node_link)
                             link_episode = Relationship(node_episode, "has", node_link)
                             graph.create(link_episode)
-                except Exception as e:
-                    print e
+                except Exception, err:
+                    logger.exception("error grom google part")
 
                 show_episode = Relationship(show_season, "has", node_episode)
                 graph.create(show_episode)
@@ -368,7 +375,6 @@ def update_info_and_links():
 
 
 def main1():
-
     authenticate("localhost:7474", "neo4j", "1234")
     graph = Graph(GRAPH_CONNECTION_STRNIG)
 
@@ -384,7 +390,6 @@ def main1():
 
 
 def main2():
-
     authenticate("localhost:7474", "neo4j", "1234")
     graph = Graph(GRAPH_CONNECTION_STRNIG)
 
@@ -405,9 +410,12 @@ def main2():
     graph.create(bob)
     graph.create(alice_knows_bob)
 
+
 if __name__ == "__main__":
-    #CreateShows()
+    # CreateShows()
     #update_show_info()
     #update_links()
     update_info_and_links()
+
+
 
