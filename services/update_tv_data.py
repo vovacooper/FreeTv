@@ -107,14 +107,14 @@ def update_show_info():
                 show_of_genre = Relationship(node_show, "of genre", node_genre)
                 graph.create(show_of_genre)
 
-        try:
+        """try:
             print node_show['started']
             a = node_show['started'].split("/")
             if int(a[len(a)-1]) < 2000:
                 continue
         except Exception:
             continue
-
+        """
 
         #Seasons
         season_list = []
@@ -272,7 +272,7 @@ def update_info_and_links():
 
                 show_of_genre = Relationship(node_show, "of genre", node_genre)
                 graph.create(show_of_genre)
-
+        """
         try:
             print node_show['started']
             a = node_show['started'].split("/")
@@ -280,6 +280,7 @@ def update_info_and_links():
                 continue
         except Exception:
             continue
+        """
 
 
         #Seasons
