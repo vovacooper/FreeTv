@@ -5,7 +5,6 @@ from flask import Blueprint, request, render_template, send_file, Response, redi
 from flask import url_for, redirect
 from flask.ext.login import login_required, current_user
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
 from flask.ext.login import current_user, login_user, logout_user
 
 from classes.decorators import ssl_required
