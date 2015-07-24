@@ -412,10 +412,10 @@ def main2():
 
 
 if __name__ == "__main__":
-    # CreateShows()
+    CreateShows()
     #update_show_info()
     #update_links()
-    update_info_and_links()
+    #update_info_and_links()
 
 
 

@@ -1,1 +1,65 @@
-Free Tv
+<!DOCTYPE html>
+<html ng-app="MyApp">
+<head>
+    <base href="/">
+    <meta charset="utf-8">
+    <title>FreeTv</title>
+    <link href="../static/favicon.png" rel="icon" type="image/png">
+    <link href='http://fonts.googleapis.com/css?family=Roboto|Montserrat:400,700|Open+Sans:400,300,700' rel='stylesheet'
+          type='text/css'>
+    <link href="//cdn.jsdelivr.net/ionicons/1.4.1/css/ionicons.min.css" rel="stylesheet">
+    <link href="../static/stylesheets/animate.css" rel="stylesheet">
+    <link href="../static/stylesheets/style.css" rel="stylesheet">
+</head>
+<body>
+<div ng-controller="NavbarCtrl" class="navbar navbar-default navbar-static-top" role="navigation" bs-navbar>
+    <div class="navbar-header">
+        <a class="navbar-brand" href="/">
+            <span>Free<strong>TV</strong></span>
+        </a>
+    </div>
+    <ul class="nav navbar-nav">
+        <li data-match-route="/$"><a href="/">Tv Shows</a></li>
+        <!--<li data-match-route="/add"><a href="/add">Add</a></li>-->
+    </ul>
+    <!--
+    <ul class="nav navbar-nav pull-right" ng-if="!currentUser">
+        <li data-match-route="/login"><a href="/login">Login</a></li>
+        <li data-match-route="/signup"><a href="/signup">Sign up</a></li>
+    </ul>
+        <ul class="nav navbar-nav pull-right" ng-if="currentUser">
+        <li class="navbar-text" ng-bind="currentUser.email"></li>
+    <li><a href="javascript:void(0)" ng-click="logout()">Logout</a></li>
+    -->
+    </ul>
+</div>
+
+<div ng-view class="{{ pageClass }}"></div>
+
+<script src="/static/vendor/angular.js"></script>
+<script src="/static/vendor/angular-strap.js"></script>
+<script src="/static/vendor/angular-strap.tpl.js"></script>
+<script src="/static/vendor/angular-messages.js"></script>
+<script src="/static/vendor/angular-resource.js"></script>
+<script src="/static/vendor/angular-route.js"></script>
+<script src="/static/vendor/angular-animate.js"></script>
+<script src="/static/vendor/moment.min.js"></script>
+
+<script src="/static/app.js"></script>
+<script src="/static/filters/fromNow.js"></script>
+<script src="/static/directives/uniqueEmail.js"></script>
+<script src="/static/directives/passwordStrength.js"></script>
+<script src="/static/controllers/main.js"></script>
+<script src="/static/controllers/detail.js"></script>
+<script src="/static/controllers/add.js"></script>
+<script src="/static/controllers/navbar.js"></script>
+<script src="/static/controllers/login.js"></script>
+<script src="/static/controllers/signup.js"></script>
+<script src="/static/services/auth.js"></script>
+<script src="/static/services/show.js"></script>
+<script src="/static/services/subscription.js"></script>
+
+<!--<script src="app.min.js"></script>-->
+<!--<script src="templates.js"></script>-->
+</body>
+</html>

@@ -13,9 +13,9 @@ from flask.ext.compress import Compress
 from datetime import timedelta
 from classes.config import KEY
 
-from modules.main_module import main_module
+from modules.api_module import api_module
 
-
+from classes.logger import logger
 
 class CustomFlask(Flask):
     jinja_options = Flask.jinja_options.copy()
@@ -39,7 +39,7 @@ app.jinja_env.autoescape = False
 Blueprints
 '''
 
-app.register_blueprint(main_module)
+app.register_blueprint(api_module)
 
 '''
 Config
@@ -50,17 +50,6 @@ app.config["SESSION_COOKIE_NAME"] = "impo_admin"
 
 app.config["WTF_CSRF_ENABLED"] = False
 
-'''
-Login
-'''
-
-from flask.ext.login import LoginManager, login_required
-
-
-login_manager = LoginManager()
-login_manager.login_view = "/login"
-login_manager.session_protection = None
-login_manager.init_app(app)
 
 Compress(app)
 
@@ -69,6 +58,21 @@ Compress(app)
 @app.route("/")
 def index():
     return render_template("index.html")
+
+
+
+@app.route('/views/<name>')
+def views(name):
+    try:
+        return render_template("/views/" + name)
+    except Exception, e:
+        logger.exception(e)
+        response = Response(response=None, status=200, mimetype="text/html")
+    return response
+
+
+
+
 
 
 
@@ -99,4 +103,4 @@ def server_error(error):
 Main
 '''
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+    app.run(host="0.0.0.0", port=3000, debug=True)

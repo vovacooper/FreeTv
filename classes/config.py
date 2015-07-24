@@ -5,6 +5,9 @@
 IMPOSPACE_CONNECTION_STRNIG = "mysql://root:Aa123456@localhost:3306/impospace?charset=utf8"
 STATS_CONNECTION_STRING = "mysql://root:Aa123456@localhost:3306/stats?charset=utf8"
 SERVICES_CONNECTION_STRNIG = "mysql://root:Aa123456@localhost:3306/services?charset=utf8"
+#GRAPH_CONNECTION_STRNIG = 'http://localhost:7474/db/data/'
+GRAPH_CONNECTION_STRNIG = 'http://52.27.227.159:7474/db/data/'
+
 REDIS_SERVER = \
     {
         "host": "127.0.0.1",
