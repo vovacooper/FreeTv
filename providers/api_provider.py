@@ -240,9 +240,17 @@ class ApiProvider():
             }
         }
         """
-        self.graph.delete_all()
+        #self.graph.delete_all()
         # fill the show on the first time!
-        #self._update_show(id)
+        '''MATCH (n:Show {id:'1'}) return n'''
+        results = self.graph.cypher.execute("MATCH (n:Show {id:'" + str(id) +  "'}) return id(n) as id")
+
+        id = None
+        for record in results:
+            id = record['id']
+        if id is None:
+            return
+        self._update_show(id)
 
         results = self.graph.cypher.stream(
             "match (s:Show {id:'" + str(id) + "'})-->(se:Season)-->(e:Episode) return s,se,e")
@@ -256,14 +264,14 @@ class ApiProvider():
                 'firstAired': record.e['airdate'],
                 'overview': record.e['Plot']
             })
-        resp = {'episodes': temp,
-                'name': record.s['name'],
-                'rating': record.s['imdbRating'],
-                'airsDayOfWeek': record.s['airsDayOfWeek'],
-                'airsTime': record.s['Runtime'],
-                'overview': record.s['Plot'],
-                'poster': record.s['Poster']
-        }
+            resp = {'episodes': temp,
+                    'name': record.s['name'],
+                    'rating': record.s['imdbRating'],
+                    'airsDayOfWeek': record.s['airsDayOfWeek'],
+                    'airsTime': record.s['Runtime'],
+                    'overview': record.s['Plot'],
+                    'poster': record.s['Poster']
+            }
         return resp
 
 

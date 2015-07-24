@@ -10,16 +10,18 @@ import sys
 import json
 
 from classes.logger import logger
+from classes.config import *
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-GRAPH_CONNECTION_STRNIG = 'http://localhost:7474/db/data/'
+
 
 
 def CreateShows():
     print 'creating shows'
-    authenticate("localhost:7474", "neo4j", "1234")
+    # authenticate("localhost:7474", "neo4j", "1234")
+    authenticate("52.27.227.159:7474", "neo4j", "1234")
     graph = Graph(GRAPH_CONNECTION_STRNIG)
 
     graph.delete_all()
