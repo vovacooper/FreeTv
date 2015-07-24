@@ -215,7 +215,7 @@ class ApiProvider():
         return resp
 
 
-    def get_show(self, id):
+    def get_show(self, show_id):
         """
 
         :param id:
@@ -243,35 +243,33 @@ class ApiProvider():
         #self.graph.delete_all()
         # fill the show on the first time!
         '''MATCH (n:Show {id:'1'}) return n'''
-        results = self.graph.cypher.execute("MATCH (n:Show {id:'" + str(id) +  "'}) return id(n) as id")
+        results = self.graph.cypher.execute("MATCH (n:Show {id:'" + str(show_id) +  "'}) return id(n) as id")
 
-        id = None
+        node_id = None
         for record in results:
-            id = record['id']
-        if id is None:
+            node_id = record['id']
+        if node_id is None:
             return
-        self._update_show(id)
+        self._update_show(node_id)
 
         results = self.graph.cypher.stream(
-            "match (s:Show {id:'" + str(id) + "'})-->(se:Season)-->(e:Episode) return s,se,e")
+            "match (s:Show {id:'" + str(show_id) + "'})-->(se:Season)-->(e:Episode) return s,se,e")
 
-        temp = []
+        resp = {'episodes': []}
         for record in results:
-            temp.append({
+            resp['episodes'].append({
                 'episodeName': record.e['title'],
                 'season': record.se['no'],
                 'episodeNumber': record.e['epnum'],
                 'firstAired': record.e['airdate'],
                 'overview': record.e['Plot']
             })
-            resp = {'episodes': temp,
-                    'name': record.s['name'],
-                    'rating': record.s['imdbRating'],
-                    'airsDayOfWeek': record.s['airsDayOfWeek'],
-                    'airsTime': record.s['Runtime'],
-                    'overview': record.s['Plot'],
-                    'poster': record.s['Poster']
-            }
+            resp['name'] =record.s['name']
+            resp['rating'] =record.s['imdbRating']
+            resp['airsDayOfWeek'] =record.s['airsDayOfWeek']
+            resp['airsTime'] =record.s['Runtime']
+            resp['overview'] =record.s['Plot']
+            resp['poster'] =record.s['Poster']
         return resp
 
 
