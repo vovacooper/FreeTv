@@ -85,9 +85,9 @@ def create_shows():
                 show_of_webchannel = Relationship(show_node, "from", webchannel_node)
                 graph.create_unique(show_of_webchannel)
 
-                country_node = graph.merge_one("Country", 'code', show['network']['country']['code'])
-                country_node['name'] = show['network']['country']['name']
-                country_node['timezone'] = show['network']['country']['timezone']
+                country_node = graph.merge_one("Country", 'code', show['webChannel']['country']['code'])
+                country_node['name'] = show['webChannel']['country']['name']
+                country_node['timezone'] = show['webChannel']['country']['timezone']
                 country_node.push()
 
                 webchannel_from_country = Relationship(webchannel_node, "from", country_node)
