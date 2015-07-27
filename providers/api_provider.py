@@ -209,7 +209,7 @@ class ApiProvider():
 
         resp = []
         for record in results:
-            resp.append({'id': record.s['id'], 'name': record.s['name'], 'poster': record.s['image'],
+            resp.append({'id': record.s['id'], 'name': record.s['name'], 'poster': record.s['img_medium'],
                          'episodes': {'length': 20}})
 
         return resp
@@ -274,23 +274,23 @@ class ApiProvider():
         #self._update_show(node_id)
 
         results = self.graph.cypher.stream(
-            "match (s:Show {id:'" + str(show_id) + "'})-->(se:Season)-->(e:Episode) return s,se,e")
+            "match (s:Show {id:" + str(show_id) + "})-->(e:Episode) return s,e")
 
         resp = {'episodes': []}
         for record in results:
             resp['episodes'].append({
-                'episodeName': record.e['title'],
-                'season': record.se['no'],
-                'episodeNumber': record.e['epnum'],
+                'episodeName': record.e['name'],
+                'season': record.e['season'],
+                'episodeNumber': record.e['number'],
                 'firstAired': record.e['airdate'],
-                'overview': record.e['Plot']
+                'overview': record.e['airdate']
             })
             resp['name'] =record.s['name']
-            resp['rating'] =record.s['imdbRating']
-            resp['airsDayOfWeek'] =record.s['airsDayOfWeek']
-            resp['airsTime'] =record.s['Runtime']
-            resp['overview'] =record.s['Plot']
-            resp['poster'] =record.s['Poster']
+            resp['rating'] =1
+            resp['airsDayOfWeek'] = 'a'
+            resp['airsTime'] =record.s['runtime']
+            resp['overview'] =record.s['summary']
+            resp['poster'] =record.s['img_medium']
         return resp
 
 

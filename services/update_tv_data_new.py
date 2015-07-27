@@ -85,13 +85,14 @@ def create_shows():
                 show_of_webchannel = Relationship(show_node, "from", webchannel_node)
                 graph.create_unique(show_of_webchannel)
 
-                country_node = graph.merge_one("Country", 'code', show['webChannel']['country']['code'])
-                country_node['name'] = show['webChannel']['country']['name']
-                country_node['timezone'] = show['webChannel']['country']['timezone']
-                country_node.push()
+                if show['webChannel']['country'] is not None:
+                    country_node = graph.merge_one("Country", 'code', show['webChannel']['country']['code'])
+                    country_node['name'] = show['webChannel']['country']['name']
+                    country_node['timezone'] = show['webChannel']['country']['timezone']
+                    country_node.push()
 
-                webchannel_from_country = Relationship(webchannel_node, "from", country_node)
-                graph.create_unique(webchannel_from_country)
+                    webchannel_from_country = Relationship(webchannel_node, "from", country_node)
+                    graph.create_unique(webchannel_from_country)
 
             if show['network'] is not None:
                 network_node = graph.merge_one("Network", 'id', show['network']['id'])
