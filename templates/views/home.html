@@ -24,11 +24,11 @@
         </div>
         <div class="panel-body">
             <div class="row show-list">
-                <div class="fade-repeat col-xs-3 col-md-3"
+                <div class="fade-repeat col-xs-2 col-md-2"
                      ng-repeat="show in shows | filter:query | orderBy:'rating':true">
                     {{ show.id }}
                     <a href="/shows/{{ show.id }}">
-                        <img style="min-height: 250px;max-height: 250px;max-width: 250px" class="img-rounded" ng-src="{{ show.poster }}"
+                        <img class="img-rounded" ng-src="{{ show.poster }}"
                              width="100%"/>
                     </a>
 
