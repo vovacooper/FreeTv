@@ -16,32 +16,255 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
+# authenticate("localhost:7474", "neo4j", "1234")
+authenticate("52.27.227.159:7474", "neo4j", "1234")
+graph = Graph(GRAPH_CONNECTION_STRNIG)
+
+def find_multiProp(graph, *labels, **properties):
+    results = None
+    for l in labels:
+        for k,v in properties.iteritems():
+            if results == None:
+                genNodes = lambda l,k,v: graph.find(l, property_key=k, property_value=v)
+                results = [r for r in genNodes(l,k,v)]
+                continue
+            prevResults = results
+            results = [n for n in genNodes(l,k,v) if n in prevResults]
+    return results
+
+def merge_one_multiProp(graph, *labels, **properties):
+    r = find_multiProp(graph, *labels, **properties)
+    if not r:
+        # remove tuple association
+        node,= graph.create(Node(*labels, **properties))
+    else:
+        node = r[0]
+    return node
 
 
-def CreateShows():
-    print 'creating shows'
-    # authenticate("localhost:7474", "neo4j", "1234")
-    authenticate("52.27.227.159:7474", "neo4j", "1234")
-    graph = Graph(GRAPH_CONNECTION_STRNIG)
 
-    graph.delete_all()
 
+
+def sreate_shows():
+    """
+    fills DB with all the shows
+    :return:
+    """
     r = requests.get('http://services.tvrage.com/feeds/show_list.php')
     root = ET.fromstring(r.text)
 
-    shows = []
+    # TODO remove
+    count = 0
     for child in root:
         show = {}
         for c in child:
             show[c.tag] = c.text
-        shows.append(show)
-        nShow = Node.cast('Show', show)
-        graph.create(nShow)
-        print str(show['name'])
-    print 'end creating shows'
+        node = graph.merge_one("Show", 'id', show['id'])
+        for c in child:
+            node[c.tag] = c.text
+
+        node.push()
+
+        # TODO remove
+        count = count + 1
+        if count > 5:
+            return
 
 
-def update_show_info():
+def create_popular_shows():
+    """
+    create popular shows node and connect all the popular show to it
+    :return:
+    """
+    return
+
+def show_to_country(show_node, country):
+    from_country = country
+    node_country = graph.merge_one("Country", 'country', from_country)
+    #node_country.push()
+
+    show_from_country = Relationship(show_node, "from", node_country)
+    graph.create(show_from_country)
+
+def show_to_genre(show_node, genre):
+    node_genre = graph.merge_one("Genre", 'name', genre)
+    node_genre.push()
+
+    show_of_genre = Relationship(show_node, "of genre", node_genre)
+    graph.create(show_of_genre)
+
+def get_season_for_show(show_node, season_no):
+    season_node = merge_one_multiProp(graph, *('Season',), **{'no': season_no, 'show_id': show_node[id]})
+
+    show_season = Relationship(show_node, "has", season_node)
+    graph.create(show_season)
+
+    return season_node
+
+def get_episode_for_season_show(show_node, season_node, episode):
+    episode_node = merge_one_multiProp(graph, *('Episode',), **episode)
+
+    return episode_node
+
+
+def update_show_info(show_node):
+    """
+    collect the basic information about the show
+    :param show_id:
+    :return:
+    """
+    result_dict = {}
+    try:
+        # data source (tvrage)
+        show_info_e_list = requests.get(
+            'http://services.tvrage.com/feeds/full_show_info.php?sid={0}'.format(show_node['id']))
+        result_dict = xmltodict.parse(show_info_e_list.text)
+
+        show_node['started'] = result_dict['Show'].get('started', None)
+        show_node['ended'] = result_dict['Show'].get('ended', None)
+        show_node['image'] = result_dict['Show'].get('image', None)
+        show_node['status'] = result_dict['Show'].get('status', None)
+
+        # data source (omdbapi)
+        omdb_show_info = requests.get(
+            'http://www.omdbapi.com/?t={0}&y=&plot=full&r=json'.format(show_node['name']))
+        dict_omdb_show_info = json.loads(omdb_show_info.text)
+        if dict_omdb_show_info['Response'] == 'True':
+            for key, value in dict_omdb_show_info.iteritems():
+                show_node[key] = value
+        show_node.push()
+
+    except ValueError as e:
+        logger.exception("Value Error")
+        return
+    except Exception as e:
+        logger.exception("Some network issue, will try again")
+
+    # Country
+    show_to_country(show_node, result_dict['Show'].get('origin_country', 'unknown'))
+
+    #Genres
+    if result_dict['Show'].get('genres', None) is not None:
+        genre_list = []
+        if type(result_dict['Show']['genres']['genre']) is list:
+            genre_list = result_dict['Show']['genres']['genre']
+        else:
+            genre_list.append(result_dict['Show']['genres']['genre'])
+
+        for genre in genre_list:
+            show_to_genre(show_node, genre)
+
+    #Seasons
+    season_list = []
+    if result_dict['Show'].get('Episodelist', None) is None:
+        # there are no seasons for this show
+        return
+
+    if type(result_dict['Show']['Episodelist']['Season']) is list:
+        season_list = result_dict['Show']['Episodelist']['Season']
+    else:
+        season_list.append(result_dict['Show']['Episodelist']['Season'])
+
+    for season in season_list:
+        season_node = get_season_for_show(show_node, season['@no'])
+
+        #Episodes
+        episode_list = []
+        if type(season['episode']) is list:
+            episode_list = season['episode']
+        else:
+            episode_list.append(season['episode'])
+
+        count = 1
+        for episode in episode_list:
+            episode_basic_info = {
+                'airdate': episode.get('airdate', None),
+                'epnum': count,
+                'screencap': episode.get('screencap', None),
+                'title': episode.get('title', None)
+            }
+            episode_node = get_episode_for_season_show(show_node, season_node ,episode_basic_info)
+
+            # Add episode info
+            try:
+                omdb_episode_info = requests.get('http://www.omdbapi.com/?t={0}&Season={1}&Episode={2}'
+                                                 .format(show_node['name'],
+                                                         season_node['no'],
+                                                         episode_node['epnum']))
+
+                dict_omdb_episode_info = json.loads(omdb_episode_info.text)
+
+                if dict_omdb_episode_info['Response'] == 'True':
+                    for key, value in dict_omdb_episode_info.iteritems():
+                        episode_node[key] = value
+                episode_node.push()
+            except ValueError as e:
+                logger.exception("Value error")
+            except Exception as e:
+                logger.exception("network issue: wil try again")
+                success = True
+
+            show_episode = Relationship(season_node, "has", episode_node)
+            graph.create(show_episode)
+            count = count + 1
+
+
+def update_links():
+    results = graph.cypher.stream("match (s:Show)-->(se:Season)-->(e:Episode) return s.name,se.no,e.epnum,id(e) as eid")
+
+    for record in results:
+        search = record['s.name'] + ' s' + str(record['e.epnum']).zfill(2) + 'e' + str(record['se.no']).zfill(2)
+
+        # links
+        search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253,
+                          4545021852, 6021755051, 8975221455]
+
+        for n in search_numbers:
+            try:
+                links_from_google = requests.get(
+                    'https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
+                    '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
+
+                dict_from_google = json.loads(links_from_google.text)
+                for result in dict_from_google['results']:
+
+                    link_node = graph.merge_one("Link", 'url', result['url'])
+                    link_node['host'] = result.get('visibleUrl', 'unknown')
+                    link_node.push()
+
+                    episode_node = graph.node(record['eid'])
+                    link_episode = Relationship(episode_node, "has", link_node)
+                    graph.create(link_episode)
+
+            except Exception, err:
+                logger.exception("error grom google part")
+
+
+def main():
+    #graph.delete_all()
+    #logger.info(" + Creating shows")
+    #sreate_shows()
+    #logger.info(" - Finished Creating shows")
+    #logger.info("Creating popular shows")
+    #create_popular_shows()
+    #logger.info(" - Finished Creating popular shows")
+
+    logger.info(" + Start updating Show info")
+    results = graph.cypher.stream("match (s:Show) return id(s) as eid")
+    #results = graph.cypher.stream("match (p:Popular)-->(s:Show) return id(s) as eid")
+    for record in results:
+        node_show = graph.node(record['eid'])
+        logger.info(" + Updating show info for: {0}".format(node_show['name']))
+        update_show_info(node_show)
+        logger.info(" - Finished updating show info for: {0}".format(node_show['name']))
+    logger.info(" - Finished updating Show info")
+
+    logger.info(" + Start updating links")
+    update_links()
+    logger.info(" - Finished updating links")
+
+
+def update_show_info_old():
     print 'updating show info'
     authenticate("localhost:7474", "neo4j", "1234")
     graph = Graph(GRAPH_CONNECTION_STRNIG)
@@ -177,37 +400,6 @@ def update_show_info():
                 count = count + 1
 
     print 'end updating show info'
-
-
-def update_links():
-    authenticate("localhost:7474", "neo4j", "1234")
-    graph = Graph(GRAPH_CONNECTION_STRNIG)
-
-    results = graph.cypher.stream("match (s:Show)-->(se:Season)-->(e:Episode) return s.name,se.no,e.epnum,id(e) as eid")
-
-    for record in results:
-        search = record['s.name'] + ' s' + str(record['e.epnum']).zfill(2) + 'e' + str(record['se.no']).zfill(2)
-
-        print search
-        # links
-        search_numbers = [3552639851, 8556419051, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253,
-                          4545021852, 6021755051, 8975221455]
-
-        for n in search_numbers:
-            links_from_google = requests.get(
-                'https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
-                '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
-
-            dict_from_google = json.loads(links_from_google.text)
-            for result in dict_from_google['results']:
-                node_link = Node.cast('Link', {
-                    'host': result.get('visibleUrl', None),
-                    'url': result['url']
-                })
-                graph.create(node_link)
-                node_episode = graph.node(record['eid'])
-                link_episode = Relationship(node_episode, "has", node_link)
-                graph.create(link_episode)
 
 
 def update_info_and_links():
@@ -414,10 +606,7 @@ def main2():
 
 
 if __name__ == "__main__":
-    CreateShows()
-    #update_show_info()
-    #update_links()
-    #update_info_and_links()
+    main()
 
 
 

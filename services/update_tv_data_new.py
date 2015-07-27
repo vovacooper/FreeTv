@@ -77,20 +77,21 @@ def create_shows():
                 show_of_genre = Relationship(show_node, "of genre", genre_node)
                 graph.create_unique(show_of_genre)
 
-            network_node = graph.merge_one("Network", 'id', show['network']['id'])
-            network_node['name'] = show['network']['name']
-            network_node.push()
+            if show['network'] is not None:
+                network_node = graph.merge_one("Network", 'id', show['network']['id'])
+                network_node['name'] = show['network']['name']
+                network_node.push()
 
-            show_of_network = Relationship(show_node, "from", network_node)
-            graph.create_unique(show_of_network)
+                show_of_network = Relationship(show_node, "from", network_node)
+                graph.create_unique(show_of_network)
 
-            country_node = graph.merge_one("Country", 'code', show['network']['country']['code'])
-            country_node['name'] = show['network']['country']['name']
-            country_node['timezone'] = show['network']['country']['timezone']
-            country_node.push()
+                country_node = graph.merge_one("Country", 'code', show['network']['country']['code'])
+                country_node['name'] = show['network']['country']['name']
+                country_node['timezone'] = show['network']['country']['timezone']
+                country_node.push()
 
-            network_from_country = Relationship(network_node, "from", country_node)
-            graph.create_unique(network_from_country)
+                network_from_country = Relationship(network_node, "from", country_node)
+                graph.create_unique(network_from_country)
 
             r1 = requests.get('http://api.tvmaze.com/shows/{0}/episodes'.format(show['id']))
             episodes = json.loads(r1.text)
