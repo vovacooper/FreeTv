@@ -16,7 +16,7 @@ api_module = Blueprint("api_module", __name__, url_prefix="/api")
 
 
 @api_module.route('/shows/<id>')
-def api_shows(id):
+def api_show(id):
     request_data = request.args
 
     api_provider = ApiProvider(request_data)  # get data from provider
@@ -27,7 +27,7 @@ def api_shows(id):
     return response_json
 
 @api_module.route('/shows')
-def api_shows_id():
+def api_shows():
     genre = request.args.get('genre', None)
     alphabet = request.args.get('alphabet', None)
     request_data = request.args
@@ -39,3 +39,15 @@ def api_shows_id():
 
     return response_json
 
+@api_module.route('/shows_names')
+def api_shows_names():
+    genre = request.args.get('genre', None)
+    alphabet = request.args.get('alphabet', None)
+    request_data = request.args
+
+    api_provider = ApiProvider(request_data)  # get data from provider
+    response_data = api_provider.get_shows_names()
+    # make json
+    response_json = json.dumps(response_data)
+
+    return response_json

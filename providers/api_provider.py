@@ -194,16 +194,16 @@ class ApiProvider():
             if self._request_data.get('genre', None) is not None:
                 query = "match (g:Genre {name:" + self._request_data[
                     'genre'] + "})<--(s:Show) WHERE s.name =~ '" + self._request_data.get(
-                    'alphabet') + ".*' return s limit 100"
+                    'alphabet') + ".*' return s limit 8"
             else:
                 query = "match (s:Show) WHERE s.name =~ '" + self._request_data.get(
-                    'alphabet') + ".*' return s limit 100"
+                    'alphabet') + ".*' return s limit 8"
 
         else:
             if self._request_data.get('genre', None) is not None:
-                query = "match (g:Genre {name:'" + self._request_data['genre'] + "'})<--(s:Show) return s limit 100"
+                query = "match (g:Genre {name:'" + self._request_data['genre'] + "'})<--(s:Show) return s limit 8"
             else:
-                query = "match (s:Show) return s limit 100"
+                query = "match (s:Show) return s limit 8"
 
         results = self.graph.cypher.stream(query)
 
@@ -214,10 +214,31 @@ class ApiProvider():
 
         return resp
 
+    def get_shows_names(self):
+        """
+        get all shows
+
+        :return:
+        {
+            id: int,
+            name: str,
+            poster: url,
+            episodes, { length: int }
+        }
+        """
+
+        query = "MATCH (n:Show) RETURN n.name,n.id limit 1000"
+
+        results = self.graph.cypher.execute(query)
+
+        resp = []
+        for record in results:
+            resp.append({'id': record['n.id'], 'name': record['n.name']})
+        return resp
+
 
     def get_show(self, show_id):
         """
-
         :param id:
         :return:
         {
@@ -242,15 +263,15 @@ class ApiProvider():
         """
         #self.graph.delete_all()
         # fill the show on the first time!
-        '''MATCH (n:Show {id:'1'}) return n'''
-        results = self.graph.cypher.execute("MATCH (n:Show {id:'" + str(show_id) +  "'}) return id(n) as id")
 
-        node_id = None
-        for record in results:
-            node_id = record['id']
-        if node_id is None:
-            return
-        self._update_show(node_id)
+        #results = self.graph.cypher.execute("MATCH (n:Show {id:'" + str(show_id) +  "'}) return id(n) as id")
+
+        #node_id = None
+        #for record in results:
+        #    node_id = record['id']
+        #if node_id is None:
+        #    return
+        #self._update_show(node_id)
 
         results = self.graph.cypher.stream(
             "match (s:Show {id:'" + str(show_id) + "'})-->(se:Season)-->(e:Episode) return s,se,e")
@@ -271,6 +292,10 @@ class ApiProvider():
             resp['overview'] =record.s['Plot']
             resp['poster'] =record.s['Poster']
         return resp
+
+
+
+
 
 
 if __name__ == "__main__":
