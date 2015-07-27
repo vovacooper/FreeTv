@@ -66,6 +66,9 @@ def create_shows():
             show_node['premiered'] = show['premiered']
             show_node['weight'] = show['weight']
 
+            if show['rating'] is not None:
+                show_node['rating'] = show['rating']['average']
+
             show_node['summary'] = show['summary']
 
             show_node['img_medium'] = show['image'].get('medium', None)
@@ -114,7 +117,7 @@ def create_shows():
             episodes = json.loads(r1.text)
 
             for episode in episodes:
-                episode_node = graph.merge_one("Episode", 'id', 10000000 + episode['id'])
+                episode_node = graph.merge_one("Episode", 'id', episode['id'])
                 episode_node['name'] = episode['name']
                 episode_node['season'] = episode['season']
                 episode_node['number'] = episode['number']
@@ -132,6 +135,30 @@ def create_shows():
 
                 show_has_episode = Relationship(show_node, "has", episode_node)
                 graph.create_unique(show_has_episode)
+
+                search = show['name'] + ' s' + str(episode['season']).zfill(2) + 'e' + str(episode['number']).zfill(2)
+
+                # links
+                search_numbers = [3552639851]#, 8556419051]; #, 2649486255, 7079685853, 8416818254, 1870757059, 1731156253,4545021852, 6021755051, 8975221455]
+
+                for n in search_numbers:
+                    try:
+                        links_from_google = requests.get(
+                            'https://www.googleapis.com/customsearch/v1element?key=AIzaSyCVAXiUzRYsML1Pv6RwSG1gunmMikTzQqY&rsz=small&num=10&hl=en&prettyPrint=false&source=gcsc&gss=.com&sig=cb6ef4de1f03dde8c26c6d526f8a1f35&cx=partner-pub-2526982841387487:{1}'
+                            '&q={0}&googlehost=www.google.com&oq={0}'.format(search, n))
+
+                        dict_from_google = json.loads(links_from_google.text)
+                        for result in dict_from_google['results']:
+
+                            link_node = graph.merge_one("Link", 'url', result['url'])
+                            link_node['host'] = result.get('visibleUrl', 'unknown')
+                            link_node.push()
+
+                            link_has_episode = Relationship(episode_node, "has", link_node)
+                            graph.create(link_has_episode)
+
+                    except Exception, err:
+                        logger.exception("error grom google part")
 
 
 

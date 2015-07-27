@@ -44,6 +44,12 @@
                 </p>
 
                 <p>{{ episode.overview }}</p>
+
+                <div ng-repeat="link in episode.links"
+                    <h4>
+                        <span class="ion-link"></span> {{ link.host }} - <em><a href="{{ link.url }}">{{ link.url }}</a></em>
+                    </h4>
+                </div>
             </div>
         </div>
     </div>

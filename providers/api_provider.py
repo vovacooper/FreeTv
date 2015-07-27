@@ -194,16 +194,16 @@ class ApiProvider():
             if self._request_data.get('genre', None) is not None:
                 query = "match (g:Genre {name:" + self._request_data[
                     'genre'] + "})<--(s:Show) WHERE s.name =~ '" + self._request_data.get(
-                    'alphabet') + ".*' return s limit 8"
+                    'alphabet') + ".*' return s limit 12"
             else:
                 query = "match (s:Show) WHERE s.name =~ '" + self._request_data.get(
-                    'alphabet') + ".*' return s limit 8"
+                    'alphabet') + ".*' return s limit 12"
 
         else:
             if self._request_data.get('genre', None) is not None:
-                query = "match (g:Genre {name:'" + self._request_data['genre'] + "'})<--(s:Show) return s limit 8"
+                query = "match (g:Genre {name:'" + self._request_data['genre'] + "'})<--(s:Show) return s limit 12"
             else:
-                query = "match (s:Show) return s limit 8"
+                query = "match (s:Show) return s limit 12"
 
         results = self.graph.cypher.stream(query)
 
@@ -273,24 +273,32 @@ class ApiProvider():
         #    return
         #self._update_show(node_id)
 
-        results = self.graph.cypher.stream(
-            "match (s:Show {id:" + str(show_id) + "})-->(e:Episode) return s,e")
+        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode) return s,e")
 
         resp = {'episodes': []}
         for record in results:
+            links_from_db = self.graph.cypher.stream("match (e:Episode {id:"  + str(record.e['id']) + "})-->(l:Link) return e,l")
+            links = []
+            for link in links_from_db:
+                links.append({
+                    'url': link.l['url'],
+                    'host': link.l['host'],
+                })
+
             resp['episodes'].append({
                 'episodeName': record.e['name'],
                 'season': record.e['season'],
                 'episodeNumber': record.e['number'],
                 'firstAired': record.e['airdate'],
-                'overview': record.e['airdate']
+                'overview': record.e['summary'],
+                'links': links
             })
-            resp['name'] =record.s['name']
-            resp['rating'] =1
-            resp['airsDayOfWeek'] = 'a'
-            resp['airsTime'] =record.s['runtime']
-            resp['overview'] =record.s['summary']
-            resp['poster'] =record.s['img_medium']
+            resp['name'] = record.s['name']
+            resp['rating'] = record.s['rating']
+            resp['airsTime'] = record.s['runtime']
+            resp['overview'] = record.s['summary']
+            resp['poster'] = record.s['img_medium']
+
         return resp
 
 

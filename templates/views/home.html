@@ -26,7 +26,6 @@
             <div class="row show-list">
                 <div class="fade-repeat col-xs-2 col-md-2"
                      ng-repeat="show in shows | filter:query | orderBy:'rating':true">
-                    {{ show.id }}
                     <a href="/shows/{{ show.id }}">
                         <img class="img-rounded" ng-src="{{ show.poster }}"
                              width="100%"/>
@@ -53,9 +52,10 @@
         </div>
         <div class="panel-body">
             <div ng-repeat="show in shows_names | filter:shows_query | orderBy:'rating':true">
-                {{ show.id }}
+
                 <a href="/shows/{{ show.id }}">{{ show.name }}</a>
             </div>
         </div>
     </div>
 </div>
+

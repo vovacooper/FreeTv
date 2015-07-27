@@ -53,13 +53,26 @@ app.config["WTF_CSRF_ENABLED"] = False
 
 Compress(app)
 
-
+from providers.api_provider import ApiProvider
 
 @app.route("/")
 def index():
+    api_provider = ApiProvider({})  # get data from provider
+    response_data = api_provider.get_shows_names()
+    # make json
+    response_json = json.dumps(response_data)
+
     return render_template("index.html")
 
 
+@app.route('/shows/<name>')
+def shows(name):
+    api_provider = ApiProvider({})  # get data from provider
+    response_data = api_provider.get_shows_names()
+    # make json
+    response_json = json.dumps(response_data)
+
+    return render_template("index.html")
 
 @app.route('/views/<name>')
 def views(name):
