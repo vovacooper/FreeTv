@@ -65,7 +65,7 @@ def create_shows():
             show_node['runtime'] = show['runtime']
             show_node['premiered'] = show['premiered']
             show_node['weight'] = show['weight']
-            show_node['webChannel'] = show['webChannel']
+
             show_node['summary'] = show['summary']
 
             show_node['img_medium'] = show['image'].get('medium', None)
@@ -76,6 +76,22 @@ def create_shows():
                 genre_node = graph.merge_one("Genre", 'genre', genre)
                 show_of_genre = Relationship(show_node, "of genre", genre_node)
                 graph.create_unique(show_of_genre)
+
+            if show['webChannel'] is not None:
+                webchannel_node = graph.merge_one("WebChannel", 'id', show['webChannel']['id'])
+                webchannel_node['name'] = show['webChannel']['name']
+                webchannel_node.push()
+
+                show_of_webchannel = Relationship(show_node, "from", webchannel_node)
+                graph.create_unique(show_of_webchannel)
+
+                country_node = graph.merge_one("Country", 'code', show['network']['country']['code'])
+                country_node['name'] = show['network']['country']['name']
+                country_node['timezone'] = show['network']['country']['timezone']
+                country_node.push()
+
+                webchannel_from_country = Relationship(webchannel_node, "from", country_node)
+                graph.create_unique(webchannel_from_country)
 
             if show['network'] is not None:
                 network_node = graph.merge_one("Network", 'id', show['network']['id'])
