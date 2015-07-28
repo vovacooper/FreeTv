@@ -33,22 +33,28 @@
         <div class="panel-heading">
             <span class="ion-film-marker"></span> Episodes
         </div>
-        <div class="panel-body">
-            <div class="episode" ng-repeat="episode in show.episodes">
-                <h4>{{ episode.episodeName }}
-                    <small>Season {{ episode.season }}, Episode {{ episode.episodeNumber }}</small>
-                </h4>
-                <p>
-                    <span class="ion-clock"></span>
-                    {{ episode.firstAired | date: 'short'}}
-                </p>
-
-                <p>{{ episode.overview }}</p>
-
-                <div ng-repeat="link in episode.links"
-                    <h4>
-                        <span class="ion-link"></span> {{ link.host }} - <em><a href="{{ link.url }}">{{ link.url }}</a></em>
+        <div >
+            <div class="episode media" ng-repeat="episode in show.episodes">
+                <div class="pull-left">
+                    <img class="media-object img-rounded" ng-src="{{ episode.img }}">
+                </div>
+                <div class="media-body">
+                    <h4>{{ episode.episodeName }}
+                        <small>Season {{ episode.season }}, Episode {{ episode.episodeNumber }}</small>
                     </h4>
+                    <p>
+                        <span class="ion-clock"></span>
+                        {{ episode.firstAired | date: 'short'}}
+                    </p>
+                    <p>{{ episode.overview }}</p>
+                </div>
+
+                <div class="media-object" ng-repeat="link in episode.links" >
+                    <h6>
+
+                        <span class="ion-link"></span> <em><a href="{{ link.url }}">{{ link.host }}</a></em>
+
+                    </h6>
                 </div>
             </div>
         </div>

@@ -291,6 +291,7 @@ class ApiProvider():
                 'episodeNumber': record.e['number'],
                 'firstAired': record.e['airdate'],
                 'overview': record.e['summary'],
+                'img': record.e['img_medium'],
                 'links': links
             })
             resp['name'] = record.s['name']
