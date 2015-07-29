@@ -273,32 +273,42 @@ class ApiProvider():
         #    return
         #self._update_show(node_id)
 
-        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode) return s,e")
-
         resp = {'episodes': []}
-        for record in results:
-            links_from_db = self.graph.cypher.stream("match (e:Episode {id:"  + str(record.e['id']) + "})-->(l:Link) return e,l")
-            links = []
-            for link in links_from_db:
-                links.append({
-                    'url': link.l['url'],
-                    'host': link.l['host'],
-                })
 
-            resp['episodes'].append({
-                'episodeName': record.e['name'],
-                'season': record.e['season'],
-                'episodeNumber': record.e['number'],
-                'firstAired': record.e['airdate'],
-                'overview': record.e['summary'],
-                'img': record.e['img_medium'],
-                'links': links
-            })
+        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "}) return s")
+
+        for record in results:
+            # show
             resp['name'] = record.s['name']
             resp['rating'] = record.s['rating']
             resp['airsTime'] = record.s['runtime']
             resp['overview'] = record.s['summary']
             resp['poster'] = record.s['img_medium']
+            show_info = True
+
+        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode)-->(l:Link) return e,l order by e.season, e.number")
+        temp_dict = {}
+        for record in results:
+            # episode
+            if temp_dict.get(record.e['id'], None) is None:
+                temp_dict[record.e['id']] = {
+                    'episodeName': record.e['name'],
+                    'season': record.e['season'],
+                    'episodeNumber': record.e['number'],
+                    'firstAired': record.e['airdate'],
+                    'overview': record.e['summary'],
+                    'img': record.e['img_medium']
+                }
+                resp['episodes'].append(temp_dict[record.e['id']])
+
+            #link
+            if temp_dict[record.e['id']].get('links', None) is None:
+                temp_dict[record.e['id']]['links'] = []
+
+            temp_dict[record.e['id']]['links'].append({
+                'url': record.l['url'],
+                'host': record.l['host']
+            })
 
         return resp
 
