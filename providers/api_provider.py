@@ -20,8 +20,8 @@ from classes.config import *
 class ApiProvider():
     def __init__(self, request_data):
         self._request_data = request_data
-        # authenticate("localhost:7474", "neo4j", "1234")
-        authenticate("52.27.227.159:7474", "neo4j", "1234")
+        authenticate("localhost:7474", "neo4j", "1234")
+        # authenticate("52.27.227.159:7474", "neo4j", "1234")
         self.graph = Graph(GRAPH_CONNECTION_STRNIG)
 
 
@@ -286,7 +286,31 @@ class ApiProvider():
             resp['poster'] = record.s['img_medium']
             show_info = True
 
-        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode)-->(l:Link) return e,l order by e.season, e.number")
+        # results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode)-->(l:Link) return e,l order by e.season, e.number")
+        # temp_dict = {}
+        # for record in results:
+        #     # episode
+        #     if temp_dict.get(record.e['id'], None) is None:
+        #         temp_dict[record.e['id']] = {
+        #             'episodeName': record.e['name'],
+        #             'season': record.e['season'],
+        #             'episodeNumber': record.e['number'],
+        #             'firstAired': record.e['airdate'],
+        #             'overview': record.e['summary'],
+        #             'img': record.e['img_medium']
+        #         }
+        #         resp['episodes'].append(temp_dict[record.e['id']])
+        #
+        #     #link
+        #     if temp_dict[record.e['id']].get('links', None) is None:
+        #         temp_dict[record.e['id']]['links'] = []
+        #
+        #     temp_dict[record.e['id']]['links'].append({
+        #         'url': record.l['url'],
+        #         'host': record.l['host']
+        #     })
+
+        results = self.graph.cypher.stream("match (s:Show {id:" + str(show_id) + "})-->(e:Episode) return e order by e.season, e.number")
         temp_dict = {}
         for record in results:
             # episode
@@ -306,8 +330,8 @@ class ApiProvider():
                 temp_dict[record.e['id']]['links'] = []
 
             temp_dict[record.e['id']]['links'].append({
-                'url': record.l['url'],
-                'host': record.l['host']
+                'url': "www.test.com",
+                'host': "test"
             })
 
         return resp

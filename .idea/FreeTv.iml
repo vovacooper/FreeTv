@@ -2,8 +2,11 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
-    <orderEntry type="jdk" jdkName="Python 2.6.9 virtualenv at ~/Work/ImpoSimple/ImpoSpace/FreeTv/venv" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Unknown at ~/Work/ImpoSimple/ImpoSpace/FreeTv/bin/python" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="$MODULE_DIR$/requirements.txt" />
   </component>
   <component name="TemplatesService">
     <option name="TEMPLATE_CONFIGURATION" value="Jinja2" />
@@ -12,5 +15,8 @@
         <option value="$MODULE_DIR$/templates" />
       </list>
     </option>
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="Unittests" />
   </component>
 </module>

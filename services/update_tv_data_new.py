@@ -16,8 +16,8 @@ reload(sys)
 sys.setdefaultencoding('utf8')
 
 
-# authenticate("localhost:7474", "neo4j", "1234")
-authenticate("52.27.227.159:7474", "neo4j", "1234")
+authenticate("localhost:7474", "neo4j", "1234")
+# authenticate("52.27.227.159:7474", "neo4j", "1234")
 graph = Graph(GRAPH_CONNECTION_STRNIG)
 
 def find_multiProp(graph, *labels, **properties):
